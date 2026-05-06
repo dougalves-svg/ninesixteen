@@ -70,6 +70,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// Root redirect
+app.get('/', (_req, res) => res.redirect('/interfaces'));
+
 // Static files served from Graphicwebsite root
 app.use(express.static(__dirname, { index: 'index.html' }));
 app.use('/uploads', express.static(UPLOADS));
