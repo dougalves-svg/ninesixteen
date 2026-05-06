@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Japandi Design Journal</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #2855A8;
+      --red: #CC4A2A;
+      --cream: #E6E1D6;
+      --white: #FFFFFF;
+      --black: #111111;
+      --font: Helvetica, "Helvetica Neue", Arial, sans-serif;
+      --margin: 40px;
+      --cols: 12;
+      --gutter: 0px;
+      --tracking: -0.2px;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: var(--font);
+      font-weight: 400;
+      letter-spacing: var(--tracking);
+      color: var(--black);
+      background: var(--white);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── 12-COLUMN GRID WRAPPER ─── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      column-gap: var(--gutter);
+      padding-left: var(--margin);
+      padding-right: var(--margin);
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      padding-top: 18px;
+      padding-bottom: 18px;
+    }
+
+    nav .grid {
+      align-items: start;
+    }
+
+    /* col 1 */
+    .nav-title {
+      grid-column: 1 / 3;
+      font-size: 11px;
+      font-weight: 400;
+      text-transform: uppercase;
+      line-height: 14px;
+      letter-spacing: var(--tracking);
+    }
+
+    /* col 4–5 */
+    .nav-notice {
+      grid-column: 4 / 7;
+      font-size: 11px;
+      font-weight: 400;
+      text-transform: uppercase;
+      line-height: 14px;
+      letter-spacing: var(--tracking);
+    }
+
+    /* col 9 */
+    .nav-index {
+      grid-column: 9 / 11;
+      font-size: 11px;
+      font-weight: 400;
+      text-transform: uppercase;
+      letter-spacing: var(--tracking);
+    }
+
+    /* col 12 */
+    .nav-info {
+      grid-column: 12 / 13;
+      font-size: 11px;
+      font-weight: 400;
+      text-transform: uppercase;
+      text-align: right;
+      letter-spacing: var(--tracking);
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--black);
+    }
+
+    /* ─── HERO ─── */
+    .hero-wrap {
+      padding-left: var(--margin);
+      padding-right: var(--margin);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 45fr 55fr;
+      height: calc(100vh - 72px);
+      min-height: 520px;
+    }
+
+    /* ─── LEFT PANEL ─── */
+    .panel-left {
+      background: var(--blue);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: var(--margin);
+    }
+
+    .shapes {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: auto;
+      margin-top: 6%;
+    }
+
+    .circle-full {
+      width: 55%;
+      aspect-ratio: 1;
+      background: var(--cream);
+      border-radius: 50%;
+    }
+
+    .circle-half {
+      width: 55%;
+      aspect-ratio: 2 / 1;
+      background: var(--cream);
+      border-radius: 0 0 9999px 9999px;
+      margin-top: -1px;
+    }
+
+    .wordmark {
+      position: absolute;
+      bottom: var(--margin);
+      left: calc(var(--margin) * 2);
+      font-size: clamp(28px, 3.6vw, 54px);
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-family: var(--font);
+    }
+
+    /* ─── RIGHT PANEL ─── */
+    .panel-right {
+      background: var(--cream);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Vertical red bar — aligns to ~col 1 of right panel */
+    .cross-v {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 12%;
+      width: 50px;
+      background: var(--red);
+    }
+
+    /* Horizontal red bar */
+    .cross-h {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 57%;
+      height: 50px;
+      background: var(--red);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="grid">
+      <div class="nav-title">
+        JAPANDI<br>DESIGN JOURNAL
+      </div>
+      <div class="nav-notice">
+        THIS WEBSITE IS IN<br>
+        CONSTANTLY<br>
+        PROGRESS
+      </div>
+      <div class="nav-index"><a href="#">INDEX</a></div>
+      <div class="nav-info"><a href="#">INFO</a></div>
+    </div>
+  </nav>
+
+  <!-- HERO — contained within 40px margins -->
+  <div class="hero-wrap"><div class="hero">
+    <div class="panel-left">
+      <div class="shapes">
+        <div class="circle-full"></div>
+        <div class="circle-half"></div>
+      </div>
+      <div class="wordmark">JAPANDI</div>
+    </div>
+    <div class="panel-right">
+      <div class="cross-v"></div>
+      <div class="cross-h"></div>
+    </div>
+  </div></div>
+
+</body>
+</html>

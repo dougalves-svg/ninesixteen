@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NineSixteen™</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg:   #fff;
+    --ph:   #e8e8e8;
+    --font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --pad:  18px;
+    --gap:  8px;
+  }
+  body { background: var(--bg); font-family: var(--font); font-weight: 400; color: rgba(0,0,0,0.9);
+         -webkit-font-smoothing: antialiased; }
+
+  /* ─── Nav ──────────────────────────────────────── */
+  nav {
+    position: sticky; top: 0; z-index: 100; background: var(--bg);
+    display: grid; grid-template-columns: repeat(12, 1fr);
+    column-gap: 16px; padding: 12px 20px; align-items: center;
+  }
+  .nav-brand   { grid-column: 1; white-space: nowrap; }
+  .nav-item-4  { grid-column: 4; }
+  .nav-item-5  { grid-column: 5; }
+  .nav-item-6  { grid-column: 6; }
+  .nav-item-10 { grid-column: 10; white-space: nowrap; }
+  .nav-item-12 { grid-column: 12; justify-self: end; white-space: nowrap; }
+  .nav-brand, .nav-item, .nav-index {
+    font-size: 16px; letter-spacing: -0.4px; font-weight: 500;
+  }
+  .nav-item { text-decoration: none; color: #000; white-space: nowrap; }
+  .nav-item:hover { opacity: 0.5; }
+  .nav-sup { font-size: 0.5em; font-weight: 400; vertical-align: super; line-height: 0; letter-spacing: 0; margin-left: 2px; }
+  .nav-item.active { position: relative; padding-left: 14px; }
+  .nav-item.active::before {
+    content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+    width: 8px; height: 8px; background: #000; border-radius: 50%;
+  }
+
+  /* ─── Hero ──────────────────────────────────────── */
+  .hero { padding: 64px var(--pad) 52px; }
+  .hero-title {
+    font-weight: 400; font-size: clamp(72px, 18.5vw, 224px);
+    line-height: 0.87; letter-spacing: -0.02em; text-transform: uppercase;
+  }
+
+  /* ─── Section / Grid ────────────────────────────── */
+  .section { padding: 0 var(--pad) 68px; }
+  .grid { display: grid; grid-template-columns: repeat(12, 1fr); column-gap: var(--gap); align-items: start; }
+
+  /* ─── Cell ──────────────────────────────────────── */
+  .cell { position: relative; }
+  .cell.empty { visibility: visible; }
+  .cell-img {
+    position: relative; width: 100%; background: var(--ph);
+    display: block;
+  }
+  .cell.empty .cell-img { aspect-ratio: 4/3; overflow: hidden; }
+  .cell-img img { width: 100%; height: auto; display: block; }
+
+  /* Caption */
+  .caption { margin-top: 8px; display: flex; flex-direction: column; }
+  .cap1 { font-size: 12px; line-height: 14px; letter-spacing: -0.1px; color: rgba(0,0,0,0.9); font-weight: 500; }
+  .cap2 { font-size: 12px; line-height: 14px; letter-spacing: -0.1px; color: rgba(0,0,0,0.45); font-weight: 400; }
+  .cap3 { display: none; }
+  .cap4 { display: none; }
+
+  /* Col spans */
+  .c-2 { grid-column: span 2; } .c-3 { grid-column: span 3; }
+  .c-4 { grid-column: span 4; } .c-5 { grid-column: span 5; }
+  .c-6 { grid-column: span 6; } .c-7 { grid-column: span 7; }
+  .c-8 { grid-column: span 8; }
+
+  /* ─── Row 2: c-6 center defines height; c-3 sides stretch to match ── */
+  .row2 .grid { align-items: stretch; }
+  .row2 .c-3 { display: flex; flex-direction: column; }
+  .row2 .c-3 .cell-img { flex: 1; min-height: 0; aspect-ratio: unset; }
+  .row2 .c-6 .cell-img { aspect-ratio: unset; height: 0; padding-bottom: calc(66.6667% - 20px); }
+
+  /* ─── Footer ────────────────────────────────────── */
+  .footer { border-top: 1px solid rgba(0,0,0,0.1); }
+  .footer-top { padding: 32px 20px 120px; }
+  .footer-grid {
+    display: grid; grid-template-columns: repeat(12, 1fr);
+    column-gap: 16px;
+  }
+  .footer-col { display: flex; flex-direction: column; gap: 2px; }
+  .footer-col-1  { grid-column: 1 / span 3; }
+  .footer-col-4  { grid-column: 4 / span 2; }
+  .footer-col-7  { grid-column: 7 / span 3; }
+  .footer-col-10 { grid-column: 10 / span 3; }
+  .footer-col span, .footer-col a {
+    font-size: 14px; line-height: 20px; letter-spacing: -0.2px;
+    color: rgba(0,0,0,0.9); text-decoration: none; font-weight: 400;
+  }
+  .footer-col a:hover { opacity: 0.5; }
+  .footer-bottom {
+    padding: 24px 20px;
+    display: grid; grid-template-columns: repeat(12, 1fr);
+    column-gap: 16px; align-items: end;
+    border-top: 1px solid rgba(0,0,0,0.1);
+  }
+  .footer-brand {
+    grid-column: 1 / span 4;
+    font-size: clamp(48px, 8vw, 120px); font-weight: 400;
+    letter-spacing: -0.02em; line-height: 1; color: rgba(0,0,0,0.9);
+  }
+  .footer-location {
+    grid-column: 5 / span 8;
+    font-size: clamp(48px, 8vw, 120px); font-weight: 400;
+    letter-spacing: -0.02em; line-height: 1; color: rgba(0,0,0,0.9);
+  }
+
+  /* ─── Lightbox ───────────────────────────────────── */
+  .lb {
+    display: none; position: fixed; inset: 0; background: #fff; z-index: 300;
+  }
+  .lb.open {
+    display: flex; flex-direction: row;
+    animation: lb-fade .15s ease;
+  }
+  @keyframes lb-fade { from { opacity: 0; } to { opacity: 1; } }
+
+  /* Left — image, fills 50% */
+  .lb-img-wrap {
+    flex: 0 0 55%; height: 100vh; overflow: hidden;
+    background: #FAF9F9;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 16px;
+  }
+  .lb-img {
+    display: block;
+    max-width: 100%; max-height: 100%;
+    width: auto; height: auto;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  /* Right — info panel */
+  .lb-panel {
+    flex: 1; height: 100vh; overflow: hidden;
+    display: flex; flex-direction: column;
+    padding: 20px; position: relative;
+  }
+  .lb-panel-top { display: flex; flex-direction: column; }
+
+  /* Title / subtitle / view */
+  .lb-title {
+    font-size: 28px; line-height: 30px; font-weight: 400; letter-spacing: -1px;
+    color: rgba(0,0,0,0.8); font-family: var(--font);
+  }
+  .lb-subtitle {
+    font-size: 28px; line-height: 30px; font-weight: 400; letter-spacing: -1px;
+    color: rgb(124,124,124); font-family: var(--font);
+  }
+  /* Divider + Metadata */
+  .lb-divider { border: none; border-top: 1px solid rgba(0,0,0,0.1); margin: 48px 0 8px; }
+  .lb-meta { display: flex; gap: 112px; }
+  .lb-meta-col { display: flex; flex-direction: column; gap: 2px; }
+  .lb-meta-name { font-size: 14px; line-height: 16px; font-weight: 500; letter-spacing: -0.4px; color: rgba(0,0,0,0.8); font-family: var(--font); }
+  .lb-meta-sub  { font-size: 14px; line-height: 16px; font-weight: 400; letter-spacing: -0.4px; color: rgb(124,124,124); font-family: var(--font); }
+  #lb-date { font-weight: 500; }
+
+  .lb-view {
+    flex: none; height: 298px; margin-top: auto; margin-bottom: 20px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid rgba(0,0,0,0.12); border-radius: 100px;
+    font-size: 20px; line-height: 24px; font-weight: 400; letter-spacing: -0.5px;
+    color: rgba(0,0,0,0.8); font-family: var(--font);
+  }
+  .lb-view { transition: background 0.15s, border-color 0.15s; cursor: pointer; }
+  .lb-view:hover { background: #222222; border-color: #222222; }
+  .lb-view:hover a { color: rgb(124,124,124); }
+  .lb-view a { color: inherit; text-decoration: none; }
+
+  /* Nav buttons */
+  .lb-nav { display: flex; gap: 8px; }
+  .lb-nav-btn {
+    flex: 1; height: 130px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    align-items: flex-start; padding: 12px 12px 12px 12px;
+    border: 1px solid rgba(0,0,0,0.12); border-radius: 16px;
+    background: none; cursor: pointer; font-family: var(--font);
+    transition: background 0.12s;
+  }
+  .lb-nav-btn:hover { background: #222222; border-color: #222222; }
+  .lb-nav-icon { font-size: 14px; color: rgb(124,124,124); line-height: 1; }
+  .lb-nav-label { font-size: 15px; line-height: 1; font-weight: 400; letter-spacing: -0.3px; color: rgb(124,124,124); }
+
+  /* Close */
+  .lb-close {
+    position: absolute; top: 12px; right: 20px;
+    font-size: 16px; line-height: 1.15; font-weight: 500;
+    letter-spacing: -0.4px; color: rgba(0,0,0,0.8);
+    background: none; border: none; padding: 0;
+    cursor: pointer; font-family: var(--font); z-index: 1;
+  }
+  .lb-close:hover { opacity: 0.5; }
+
+  /* ─── Responsive ─────────────────────────────────── */
+  @media (max-width: 900px) {
+    .c-2,.c-3,.c-4,.c-5 { grid-column: span 6; }
+    .c-6,.c-7,.c-8 { grid-column: span 12; }
+    .row2 .grid { align-items: start; }
+    .row2 .c-3 { display: block; }
+    .row2 .c-3 .cell-img { flex: none; aspect-ratio: 3/4; }
+    .row2 .c-6 .cell-img { aspect-ratio: 3/2; height: auto; padding-bottom: 0; }
+  }
+  @media (max-width: 640px) { .nav-links { display: none; } .nav-brand,.nav-index { font-size: 16px; } }
+  @media (max-width: 480px) {
+    :root { --pad: 12px; --gap: 6px; }
+    nav { padding: 10px var(--pad); }
+    .nav-brand,.nav-index { font-size: 14px; }
+    .hero { padding: 32px var(--pad) 28px; }
+    .section { padding: 0 var(--pad) 40px; }
+    .c-2,.c-3,.c-4,.c-5,.c-6,.c-7,.c-8 { grid-column: span 12; }
+    .cap1,.cap2,.cap3,.cap4 { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <span class="nav-brand nav-item-4" style="grid-column:1">NineSixteen™</span>
+  <a href="/interfaces" class="nav-item nav-item-4 active">Interfaces</a>
+  <a href="#" class="nav-item nav-item-5">Designers</a>
+  <a href="/studio" class="nav-item nav-item-6">Studios</a>
+  <a href="#" class="nav-item nav-item-10">Visual Systems</a>
+  <span class="nav-index nav-item-12">Index</span>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <h1 class="hero-title" style="text-transform: none; letter-spacing: -8px;">NineSixteen<span style="font-size:0.25em;vertical-align:super;letter-spacing:-4px;">™</span></h1>
+</section>
+
+<!-- Section 1 · landscape, portrait, wide, landscape -->
+<section class="section"><div class="grid">
+  <div class="cell c-3 empty" data-id="0">
+    <div class="cell-img"></div>
+    <div class="caption"><div class="cap1"></div><div class="cap2"></div><div class="cap3"></div><div class="cap4"></div></div>
+  </div>
+  <div class="cell c-3 empty" data-id="1">
+    <div class="cell-img"></div>
+    <div class="caption"><div class="cap1"></div><div class="cap2"></div><div class="cap3"></div><div class="cap4"></div></div>
+  </div>
+  <div class="cell c-3 empty" data-id="2">
+    <div class="cell-img"></div>
+    <div class="caption"><div class="cap1"></div><div class="cap2"></div><div class="cap3"></div><div class="cap4"></div></div>
+  </div>
+  <div class="cell c-3 empty" data-id="3">
+    <div class="cell-img"></div>
+    <div class="caption"><div class="cap1"></div><div class="cap2"></div><div class="cap3"></div><div class="cap4"></div></div>
+  </div>
+</div></section>
+
+<!-- Section 2 · portrait, landscape, portrait, wide -->
+<section class="section"><div class="grid">
+  <div class="cell c-3 empty" data-id="4">
+    <div class="cell-img"></div>
+    <div class="caption"><div class="cap1"></div><div class="cap2"></div><div class="cap3"></div><div class="cap4"></div></div>
+  </div>
+  <div class="cell c-3 empty" data-id="5">
+    <div class="cell-img"></div>
+    <div class="caption"><div class="cap1"></div><div class="cap2"></div><div class="cap3"></div><div class="cap4"></div></div>
+  </div>
+  <div class="cell c-3 empty" data-id="6">
+    <div class="cell-img"></div>
+    <div class="caption"><div class="cap1"></div><div class="cap2"></div><div class="cap3"></div><div class="cap4"></div></div>
+  </div>
+  <div class="cell c-3 empty" data-id="7">
+    <div class="cell-img"></div>
+    <div class="caption"><div class="cap1"></div><div class="cap2"></div><div class="cap3"></div><div class="cap4"></div></div>
+  </div>
+</div></section>
+
+<!-- Extra images — one <section> per row group, built by JS -->
+<div id="dyn-container"></div>
+
+
+<!-- Lightbox -->
+<div class="lb" id="lb">
+  <div class="lb-img-wrap">
+    <img id="lb-img" src="" alt="" class="lb-img">
+  </div>
+  <div class="lb-panel">
+    <div class="lb-panel-top">
+      <div class="lb-title"    id="lb-cap1"></div>
+      <div class="lb-subtitle" id="lb-cap2"></div>
+    </div>
+    <hr class="lb-divider">
+    <div class="lb-meta">
+      <div class="lb-meta-col">
+        <div class="lb-meta-name" id="lb-meta-name"></div>
+        <div class="lb-meta-sub"  id="lb-meta-cat"></div>
+      </div>
+      <div class="lb-meta-col">
+        <div class="lb-meta-name" id="lb-cap3"></div>
+        <div class="lb-meta-sub"  id="lb-date"></div>
+      </div>
+    </div>
+    <div class="lb-view" id="lb-cap4"></div>
+    <div class="lb-nav">
+      <button class="lb-nav-btn" id="lb-prev">
+        <span class="lb-nav-icon"><svg width="15" height="10" viewBox="0 0 15 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.888 9.008L4.976 9.936L0 4.976L4.976 0L5.888 0.912L2.496 4.304L14.128 4.304L14.128 5.632L2.48 5.632L5.888 9.008Z" fill="rgb(124,124,124)"/></svg></span>
+        <span class="lb-nav-label">Previous</span>
+      </button>
+      <button class="lb-nav-btn" id="lb-esc-btn">
+        <span class="lb-nav-icon"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;"><path d="M1 1L9 9M9 1L1 9" stroke="rgb(124,124,124)" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+        <span class="lb-nav-label">Esc</span>
+      </button>
+      <button class="lb-nav-btn" id="lb-next">
+        <span class="lb-nav-icon"><svg width="15" height="10" viewBox="0 0 15 10" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform: scaleX(-1); display: block;"><path d="M5.888 9.008L4.976 9.936L0 4.976L4.976 0L5.888 0.912L2.496 4.304L14.128 4.304L14.128 5.632L2.48 5.632L5.888 9.008Z" fill="rgb(124,124,124)"/></svg></span>
+        <span class="lb-nav-label">Next</span>
+      </button>
+    </div>
+  </div>
+  <button class="lb-close" id="lb-close">Close</button>
+</div>
+
+<script>
+(function () {
+  const FIXED_MAX = 7;
+
+  const DYNAMIC_PATTERN = [
+    // row 3: wide, portrait, landscape, portrait
+    {col:'c-3', ratio:'r-3-2'},
+    {col:'c-3', ratio:'r-3-4'},
+    {col:'c-3', ratio:'r-4-3'},
+    {col:'c-3', ratio:'r-3-4'},
+    // row 4: landscape, wide, portrait, landscape
+    {col:'c-3', ratio:'r-4-3'},
+    {col:'c-3', ratio:'r-3-2'},
+    {col:'c-3', ratio:'r-2-3'},
+    {col:'c-3', ratio:'r-4-3'},
+    // row 5: portrait, landscape, landscape, portrait
+    {col:'c-3', ratio:'r-3-4'},
+    {col:'c-3', ratio:'r-4-3'},
+    {col:'c-3', ratio:'r-3-2'},
+    {col:'c-3', ratio:'r-3-4'},
+    // row 6 (loops back to row 1 feel): landscape, portrait, wide, landscape
+    {col:'c-3', ratio:'r-4-3'},
+    {col:'c-3', ratio:'r-3-4'},
+    {col:'c-3', ratio:'r-4-3'},
+    {col:'c-3', ratio:'r-3-2'},
+  ];
+
+  const ROW_STARTS = [0];
+  const CYCLE      = 4;
+
+  function getPatternForId(id) {
+    const dynIndex = id - (FIXED_MAX + 1);
+    const len = DYNAMIC_PATTERN.length;
+    return DYNAMIC_PATTERN[((dynIndex % len) + len) % len];
+  }
+
+  function dynRowGroup(di) {
+    const p = di % CYCLE;
+    let r = 0;
+    for (let i = ROW_STARTS.length - 1; i >= 0; i--) {
+      if (p >= ROW_STARTS[i]) { r = i; break; }
+    }
+    return Math.floor(di / CYCLE) * ROW_STARTS.length + r;
+  }
+
+  const dynContainer = document.getElementById('dyn-container');
+  const lb    = document.getElementById('lb');
+  const lbImg = document.getElementById('lb-img');
+
+  // Gallery index for prev/next
+  let galleryItems = []; // [{src, caps}] sorted by cell_id
+  let lbIndex = 0;
+  let capData = {}; // caption data keyed by cell_id, kept in scope for placeImage
+
+  const lbClose = document.getElementById('lb-close');
+  const closeLb = () => { lb.classList.remove('open'); document.body.style.overflow = ''; };
+  lbImg.addEventListener('click', closeLb);
+  lbClose.addEventListener('click', closeLb);
+  document.getElementById('lb-esc-btn').addEventListener('click', closeLb);
+  lb.addEventListener('click', e => { if (e.target === lb) closeLb(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeLb();
+    if (e.key === 'ArrowRight') navigateLb(1);
+    if (e.key === 'ArrowLeft')  navigateLb(-1);
+  });
+  document.getElementById('lb-prev').addEventListener('click', () => navigateLb(-1));
+  document.getElementById('lb-next').addEventListener('click', () => navigateLb(1));
+
+  function navigateLb(dir) {
+    if (!galleryItems.length) return;
+    lbIndex = (lbIndex + dir + galleryItems.length) % galleryItems.length;
+    const { src, caps } = galleryItems[lbIndex];
+    populateLb(src, caps);
+  }
+
+  function populateLb(src, caps) {
+    const clean = s => (s || '').replace(/↴/g, '').trim();
+    const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setText('lb-cap1', clean(caps.c1));
+    setText('lb-cap2', clean(caps.c2));
+    setText('lb-cap3', clean(caps.c3));
+    setText('lb-meta-name', clean(caps.c5 || caps.c1));
+    setText('lb-meta-cat',  clean(caps.c6 || caps.c2));
+    const dateMs = caps.created;
+    const dateStr = dateMs
+      ? new Date(dateMs).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+      : '';
+    setText('lb-date', dateStr);
+    const c4el = document.getElementById('lb-cap4');
+    const urls = (caps.c4 || '').match(/https?:\/\/[^\s]+/g);
+    if (c4el) {
+      if (urls && urls.length) {
+        c4el.innerHTML = `<a href="${urls[0]}" target="_blank" rel="noopener">View Project</a>`;
+      } else { c4el.textContent = ''; }
+    }
+    lbImg.src = src;
+  }
+
+  function openLb(src, caps) {
+    lbIndex = galleryItems.findIndex(g => g.src === src);
+    if (lbIndex < 0) lbIndex = 0;
+    populateLb(src, caps);
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function getDynGrid(rg) {
+    let sec = dynContainer.querySelector(`[data-rg="${rg}"]`);
+    if (!sec) {
+      sec = document.createElement('section');
+        sec.className = 'section';
+      sec.dataset.rg = String(rg);
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+      sec.appendChild(grid);
+      dynContainer.appendChild(sec);
+    }
+    return sec.querySelector('.grid');
+  }
+
+  function createPublicCell(id) {
+    const pat  = getPatternForId(id);
+    const cell = document.createElement('div');
+    cell.className = `cell ${pat.col} empty`;
+    cell.dataset.id = String(id);
+    cell.innerHTML = `
+      <div class="cell-img"></div>
+      <div class="caption"><div class="cap1"></div><div class="cap2"></div><div class="cap3"></div><div class="cap4"></div></div>`;
+    return cell;
+  }
+
+  function placeImage(cell, img) {
+    cell.classList.remove('empty');
+    const box = cell.querySelector('.cell-img');
+    const el  = document.createElement('img');
+    el.src = img.url; el.alt = '';
+    box.appendChild(el);
+    box.style.cursor = 'zoom-in';
+    box.addEventListener('click', () => {
+      const cellCap = capData && capData[cell.dataset.id] || {};
+      const caps = {
+        c1: cell.querySelector('.cap1')?.textContent || '',
+        c2: cell.querySelector('.cap2')?.textContent || '',
+        c3: cell.querySelector('.cap3')?.textContent || '',
+        c4: cell.querySelector('.cap4')?.innerHTML   || '',
+        c5: cellCap.c5 || '',
+        c6: cellCap.c6 || '',
+        created: img.created || null,
+      };
+      openLb(img.url, caps);
+    });
+  }
+
+  async function load() {
+    try {
+      const [imgRes, capRes] = await Promise.all([
+        fetch('/api/interfaces/images'), fetch('/api/interfaces/captions')
+      ]);
+      const images  = await imgRes.json();
+      capData = await capRes.json();
+
+      images
+        .filter(img => img.cell_id != null && img.cell_id > FIXED_MAX)
+        .sort((a, b) => a.cell_id - b.cell_id)
+        .forEach(img => {
+          if (document.querySelector(`.cell[data-id="${img.cell_id}"]`)) return;
+          const rg   = dynRowGroup(img.cell_id - (FIXED_MAX + 1));
+          const cell = createPublicCell(img.cell_id);
+          getDynGrid(rg).appendChild(cell);
+        });
+
+      images.forEach(img => {
+        if (img.cell_id == null) return;
+        const cell = document.querySelector(`.cell[data-id="${img.cell_id}"]`);
+        if (!cell) return;
+        placeImage(cell, img);
+      });
+
+      document.querySelectorAll('.cell[data-id]').forEach(cell => {
+        const cap = capData[cell.dataset.id];
+        if (!cap) return;
+        const c1 = cell.querySelector('.cap1');
+        const c2 = cell.querySelector('.cap2');
+        const c3 = cell.querySelector('.cap3');
+        const c4 = cell.querySelector('.cap4');
+        if (cap.c1) c1.textContent = cap.c1;
+        if (cap.c2) c2.textContent = cap.c2;
+        if (cap.c3) c3.textContent = cap.c3;
+        if (cap.c4) {
+          const urls = cap.c4.match(/https?:\/\/[^\s]+/g);
+          if (urls && urls.length) {
+            c4.innerHTML = urls.map(u => {
+              try { const p = new URL(u); if (p.protocol !== 'http:' && p.protocol !== 'https:') return ''; }
+              catch { return ''; }
+              return `<a href="${u}" target="_blank" rel="noopener">● View</a>`;
+            }).filter(Boolean).join('&nbsp;&nbsp;');
+          } else {
+            c4.textContent = cap.c4;
+          }
+        }
+      });
+
+      // Build ordered gallery for prev/next navigation
+      galleryItems = images
+        .filter(img => img.cell_id != null)
+        .sort((a, b) => a.cell_id - b.cell_id)
+        .map(img => {
+          const cell = document.querySelector(`.cell[data-id="${img.cell_id}"]`);
+          const capRow = capData[img.cell_id] || {};
+          return {
+            src: img.url,
+            caps: {
+              c1: cell?.querySelector('.cap1')?.textContent || '',
+              c2: cell?.querySelector('.cap2')?.textContent || '',
+              c3: cell?.querySelector('.cap3')?.textContent || '',
+              c4: cell?.querySelector('.cap4')?.innerHTML   || '',
+              c5: capRow.c5 || '',
+              c6: capRow.c6 || '',
+              created: img.created || null,
+            }
+          };
+        });
+
+    } catch(e) {}
+  }
+
+  async function updateNavCounts() {
+    try {
+      const fmt = n => n < 10 ? '0' + n : String(n);
+      const [gRes, sRes, iRes] = await Promise.all([
+        fetch('/api/images'), fetch('/api/studio/images'), fetch('/api/interfaces/images')
+      ]);
+      const gImgs = await gRes.json();
+      const sImgs = await sRes.json();
+      const iImgs = await iRes.json();
+      const el = id => document.getElementById(id);
+      if (el('count-graphics'))   el('count-graphics').textContent   = fmt(gImgs.filter(i => i.cell_id != null).length);
+      if (el('count-studios'))    el('count-studios').textContent    = fmt(sImgs.filter(i => i.cell_id != null).length);
+      if (el('count-interfaces')) el('count-interfaces').textContent = fmt(iImgs.filter(i => i.cell_id != null).length);
+      if (el('count-designers'))  el('count-designers').textContent  = '—';
+    } catch(e) {}
+  }
+
+  load();
+  updateNavCounts();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gallery</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg:   #fff;
+    --ph:   #e8e8e8;
+    --font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --pad:  18px;
+    --gap:  8px;
+  }
+  body { background: var(--bg); font-family: var(--font); font-weight: 400; color: rgba(0,0,0,0.9);
+         -webkit-font-smoothing: antialiased; }
+
+  /* ─── Nav ──────────────────────────────────────── */
+  nav {
+    position: sticky; top: 0; z-index: 100; background: var(--bg);
+    display: grid; grid-template-columns: repeat(12, 1fr);
+    column-gap: 16px; padding: 12px 20px; align-items: center;
+  }
+  .nav-brand   { grid-column: 1; white-space: nowrap; }
+  .nav-item-4  { grid-column: 4; }
+  .nav-item-5  { grid-column: 5; }
+  .nav-item-6  { grid-column: 6; }
+  .nav-item-10 { grid-column: 10; white-space: nowrap; }
+  .nav-item-12 { grid-column: 12; justify-self: end; white-space: nowrap; }
+  .nav-brand, .nav-item, .nav-index {
+    font-size: 16px; letter-spacing: -0.4px; font-weight: 500;
+  }
+  .nav-item { text-decoration: none; color: #000; white-space: nowrap; }
+  .nav-item:hover { opacity: 0.5; }
+  .nav-sup { font-size: 0.5em; font-weight: 400; vertical-align: super; line-height: 0; letter-spacing: 0; margin-left: 2px; }
+  .nav-item.active { position: relative; padding-left: 14px; }
+  .nav-item.active::before {
+    content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+    width: 8px; height: 8px; background: #000; border-radius: 50%;
+  }
+
+  /* ─── Add-image placeholder cell ────────────────── */
+  .add-cell .cell-img { cursor: pointer; }
+  .add-cell .cell-overlay { opacity: 1; background: rgba(0,0,0,0.04); }
+
+  /* row2 strips aspect-ratio/flex from c-3 and c-6 cells so they stretch to
+     match their siblings — but an add-cell is always alone in its row group,
+     so it collapses to 0 height. Restore proper sizing for add-cells only. */
+  .row2 .add-cell.c-3 { display: block; }
+  .row2 .add-cell.c-3 .cell-img { flex: none; aspect-ratio: 3/4; }
+  .row2 .add-cell.c-6 .cell-img { aspect-ratio: 3/2; height: auto; padding-bottom: 0; }
+
+  /* ─── Hero ──────────────────────────────────────── */
+  .hero { padding: 64px var(--pad) 52px; }
+  .hero-title {
+    font-weight: 400; font-size: clamp(72px, 18.5vw, 224px);
+    line-height: 0.87; letter-spacing: -8px; text-transform: none;
+  }
+
+  /* ─── Section / Grid ────────────────────────────── */
+  .section { padding: 0 var(--pad) 68px; }
+  .grid { display: grid; grid-template-columns: repeat(12, 1fr); column-gap: var(--gap); align-items: start; }
+
+  /* ─── Cell ──────────────────────────────────────── */
+  .cell { position: relative; }
+  .cell-img {
+    position: relative; width: 100%; background: var(--ph);
+    overflow: hidden; cursor: pointer; display: block; aspect-ratio: 4/3;
+  }
+  .cell-img:has(img) { aspect-ratio: unset; }
+  .cell-img img { width: 100%; height: auto; display: block; }
+  /* loading shimmer */
+  .cell-img.loading::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, var(--ph) 25%, #d8d8d8 50%, var(--ph) 75%);
+    background-size: 200% 100%; animation: shimmer 1.2s infinite;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+  /* Hover overlay */
+  .cell-overlay {
+    position: absolute; inset: 0; display: flex;
+    align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.15s;
+    background: rgba(0,0,0,0.07); pointer-events: none;
+  }
+  .cell:hover .cell-overlay { opacity: 1; }
+  /* On interfaces/studio, always show + on cells that have no image yet */
+  [data-section="interfaces"] .cell:not([data-image-name]) .cell-overlay,
+  [data-section="studio"] .cell:not([data-image-name]) .cell-overlay { opacity: 0.55; }
+
+  /* ── Interfaces: hide Section 3 and its cells (static only — scoped to
+       #section-static-3 so dynamic cells with the same IDs aren't affected) ── */
+  [data-section="interfaces"] #section-static-3 { display: none; }
+  [data-section="interfaces"] #section-static-3 .cell { display: none; }
+  .overlay-icon {
+    width: 32px; height: 32px; background: rgba(255,255,255,0.82);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  }
+  .overlay-icon svg { width: 14px; height: 14px; }
+
+  /* Remove button */
+  .cell-remove {
+    position: absolute; top: 7px; right: 7px;
+    width: 20px; height: 20px; background: rgba(0,0,0,0.48);
+    border: none; border-radius: 50%; cursor: pointer;
+    display: none; align-items: center; justify-content: center;
+    z-index: 10; transition: background 0.12s; pointer-events: all;
+  }
+  .cell-remove:hover { background: rgba(0,0,0,0.82); }
+  .cell:hover .cell-remove { display: flex; }
+  .cell-remove svg { width: 8px; height: 8px; stroke: #fff; stroke-width: 1.8; }
+
+  /* Caption */
+  .caption { margin-top: 8px; display: flex; flex-direction: column; }
+  .cap1 { font-size: 12px; line-height: 14px; letter-spacing: -0.1px; color: rgba(0,0,0,0.9); font-weight: 500; outline: none; cursor: text; min-width: 4px; }
+  .cap2 { font-size: 12px; line-height: 14px; letter-spacing: -0.1px; color: rgba(0,0,0,0.45); font-weight: 400; outline: none; cursor: text; min-width: 4px; }
+  .cap3 { display: none; }
+  .cap4 { display: none; }
+
+  /* Col spans */
+  .c-2 { grid-column: span 2; } .c-3 { grid-column: span 3; }
+  .c-4 { grid-column: span 4; } .c-5 { grid-column: span 5; }
+  .c-6 { grid-column: span 6; } .c-7 { grid-column: span 7; }
+  .c-8 { grid-column: span 8; }
+  .row-gap { grid-column: span 12; height: 36px; }
+  .file-input { display: none; }
+
+  /* ── Row 2: c-6 center defines height; c-3 sides stretch to match ──────
+     Result: all three images in a Row 2 are exactly the same height.      */
+  .row2 .grid { align-items: stretch; }
+  .row2 .c-3 { display: flex; flex-direction: column; }
+  .row2 .c-3 .cell-img { flex: 1; min-height: 0; aspect-ratio: unset; }
+  .row2 .c-6 .cell-img { aspect-ratio: unset; height: 0; padding-bottom: calc(66.6667% - 20px); }
+
+  /* ─── Password Modal ─────────────────────────────── */
+  .modal-bg {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.4); z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: #fff; border-radius: 10px; padding: 24px;
+    width: 300px; display: flex; flex-direction: column; gap: 12px;
+  }
+  .modal h3 { font-size: 13px; font-weight: 300; }
+  .modal input {
+    border: 1px solid #ddd; border-radius: 6px; padding: 8px 12px;
+    font-size: 13px; font-family: var(--font); width: 100%; outline: none;
+  }
+  .modal input:focus { border-color: #000; }
+  .modal-err { font-size: 11px; color: #c00; display: none; }
+  .modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+  .mbtn {
+    height: 30px; padding: 0 14px; border-radius: 6px;
+    font-size: 14px; font-family: var(--font); cursor: pointer; border: 1px solid #000;
+  }
+  .mbtn-ghost { background: none; }
+  .mbtn-solid { background: #000; color: #fff; }
+
+  /* ─── Edit metadata modal ───────────────────────── */
+  .edit-modal-bg {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.35); z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .edit-modal-bg.open { display: flex; }
+  .edit-modal {
+    background: #fff; border-radius: 12px; padding: 32px;
+    width: 560px; display: flex; flex-direction: column; gap: 14px;
+  }
+  .edit-modal-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+  }
+  .edit-modal-title { font-size: 40px; font-weight: 400; letter-spacing: -1px; }
+  .edit-modal-x {
+    background: none; border: none; cursor: pointer;
+    font-size: 20px; color: rgba(0,0,0,0.3); padding: 0; line-height: 1;
+  }
+  .edit-modal-x:hover { color: rgba(0,0,0,0.8); }
+  .edit-field { display: flex; flex-direction: column; gap: 5px; }
+  .edit-label { font-size: 10px; letter-spacing: 0.4px; text-transform: uppercase; color: rgba(0,0,0,0.35); font-weight: 500; }
+  .edit-input {
+    border: 1px solid #e8e8e8; border-radius: 6px; padding: 8px 10px;
+    font-size: 13px; font-family: var(--font); width: 100%; outline: none;
+    color: rgba(0,0,0,0.9); letter-spacing: -0.2px;
+  }
+  .edit-input:focus { border-color: rgba(0,0,0,0.25); }
+  .edit-modal-actions { display: flex; gap: 8px; margin-top: 4px; }
+  .edit-btn {
+    flex: 1; height: 34px; border-radius: 6px;
+    font-size: 13px; font-family: var(--font); cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.15); background: none; letter-spacing: -0.2px;
+  }
+  .edit-btn:hover { background: rgba(0,0,0,0.04); }
+  .edit-btn-primary { background: #000; color: #fff; border-color: #000; }
+  .edit-btn-primary:hover { background: #333; }
+
+  /* ─── Drag-to-reorder ───────────────────────────── */
+  .cell[draggable="true"] { cursor: grab; }
+  .cell[draggable="true"] .cell-img { cursor: grab; }
+  .cell[draggable="true"]:active,
+  .cell[draggable="true"]:active .cell-img { cursor: grabbing; }
+  .cell.dragging { opacity: 0.3; }
+  .cell.drag-over .cell-img { outline: 2px solid rgba(0,0,0,0.3); outline-offset: -2px; }
+
+  /* ─── Responsive ─────────────────────────────────── */
+  @media (max-width: 900px) {
+    .c-2,.c-3,.c-4,.c-5 { grid-column: span 6; }
+    .c-6,.c-7,.c-8 { grid-column: span 12; }
+    /* Row 2 cells wrap to separate rows — restore individual aspect-ratios */
+    .row2 .grid { align-items: start; }
+    .row2 .c-3 { display: block; }
+    .row2 .c-3 .cell-img { flex: none; aspect-ratio: 3/4; }
+    .row2 .c-6 .cell-img { aspect-ratio: 3/2; height: auto; padding-bottom: 0; }
+  }
+  @media (max-width: 640px) { .nav-links { display: none; } .nav-brand,.nav-index { font-size: 16px; } }
+  @media (max-width: 480px) {
+    :root { --pad: 12px; --gap: 6px; }
+    nav { padding: 10px var(--pad); }
+    .nav-brand,.nav-index { font-size: 14px; }
+    .hero { padding: 32px var(--pad) 28px; }
+    .section { padding: 0 var(--pad) 40px; }
+    .c-2,.c-3,.c-4,.c-5,.c-6,.c-7,.c-8 { grid-column: span 12; }
+    .row-gap { height: 20px; }
+    .cap1,.cap2,.cap3,.cap4 { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <span class="nav-brand" style="grid-column:1">NineSixteen™</span>
+  <a href="/admin?section=interfaces" class="nav-item nav-item-4" data-section="interfaces">Interfaces</a>
+  <a href="#" class="nav-item nav-item-5">Designers</a>
+  <a href="/admin?section=studio" class="nav-item nav-item-6" data-section="studio">Studios</a>
+  <a href="#" class="nav-item nav-item-10">Visual Systems</a>
+  <span class="nav-index nav-item-12">Index</span>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <h1 class="hero-title" id="hero-title">Graphic</h1>
+</section>
+
+<!-- Section 1 · 3+3+3+3 landscape, portrait, wide, landscape -->
+<section class="section"><div class="grid">
+  <div class="cell c-3" data-id="0">
+    <div class="cell-img">
+      <div class="cell-overlay"><div class="overlay-icon"><svg viewBox="0 0 14 14" fill="none" stroke="#000" stroke-width="1.4" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg></div></div>
+      <button class="cell-remove"><svg viewBox="0 0 8 8" fill="none" stroke-linecap="round"><line x1="1" y1="1" x2="7" y2="7"/><line x1="7" y1="1" x2="1" y2="7"/></svg></button>
+    </div>
+    <div class="caption"><div class="cap1" contenteditable="true">Category ↗</div><div class="cap2" contenteditable="true">Title – Project Name</div><div class="cap3" contenteditable="true">Description</div><div class="cap4" contenteditable="true">https://</div></div>
+    <input type="file" class="file-input" accept="image/*">
+  </div>
+  <div class="cell c-3" data-id="1">
+    <div class="cell-img">
+      <div class="cell-overlay"><div class="overlay-icon"><svg viewBox="0 0 14 14" fill="none" stroke="#000" stroke-width="1.4" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg></div></div>
+      <button class="cell-remove"><svg viewBox="0 0 8 8" fill="none" stroke-linecap="round"><line x1="1" y1="1" x2="7" y2="7"/><line x1="7" y1="1" x2="1" y2="7"/></svg></button>
+    </div>
+    <div class="caption"><div class="cap1" contenteditable="true">Category ↗</div><div class="cap2" contenteditable="true">Title – Project Name</div><div class="cap3" contenteditable="true">Description</div><div class="cap4" contenteditable="true">https://</div></div>
+    <input type="file" class="file-input" accept="image/*">
+  </div>
+  <div class="cell c-3" data-id="2">
+    <div class="cell-img">
+      <div class="cell-overlay"><div class="overlay-icon"><svg viewBox="0 0 14 14" fill="none" stroke="#000" stroke-width="1.4" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg></div></div>
+      <button class="cell-remove"><svg viewBox="0 0 8 8" fill="none" stroke-linecap="round"><line x1="1" y1="1" x2="7" y2="7"/><line x1="7" y1="1" x2="1" y2="7"/></svg></button>
+    </div>
+    <div class="caption"><div class="cap1" contenteditable="true">Category ↗</div><div class="cap2" contenteditable="true">Title – Project Name</div><div class="cap3" contenteditable="true">Description</div><div class="cap4" contenteditable="true">https://</div></div>
+    <input type="file" class="file-input" accept="image/*">
+  </div>
+  <div class="cell c-3" data-id="3">
+    <div class="cell-img">
+      <div class="cell-overlay"><div class="overlay-icon"><svg viewBox="0 0 14 14" fill="none" stroke="#000" stroke-width="1.4" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg></div></div>
+      <button class="cell-remove"><svg viewBox="0 0 8 8" fill="none" stroke-linecap="round"><line x1="1" y1="1" x2="7" y2="7"/><line x1="7" y1="1" x2="1" y2="7"/></svg></button>
+    </div>
+    <div class="caption"><div class="cap1" contenteditable="true">Category ↗</div><div class="cap2" contenteditable="true">Title – Project Name</div><div class="cap3" contenteditable="true">Description</div><div class="cap4" contenteditable="true">https://</div></div>
+    <input type="file" class="file-input" accept="image/*">
+  </div>
+</div></section>
+
+<!-- Section 2 · 3+3+3+3 portrait, landscape, tall portrait, wide -->
+<section class="section"><div class="grid">
+  <div class="cell c-3" data-id="4">
+    <div class="cell-img">
+      <div class="cell-overlay"><div class="overlay-icon"><svg viewBox="0 0 14 14" fill="none" stroke="#000" stroke-width="1.4" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg></div></div>
+      <button class="cell-remove"><svg viewBox="0 0 8 8" fill="none" stroke-linecap="round"><line x1="1" y1="1" x2="7" y2="7"/><line x1="7" y1="1" x2="1" y2="7"/></svg></button>
+    </div>
+    <div class="caption"><div class="cap1" contenteditable="true">Category ↗</div><div class="cap2" contenteditable="true">Title – Project Name</div><div class="cap3" contenteditable="true">Description</div><div class="cap4" contenteditable="true">https://</div></div>
+    <input type="file" class="file-input" accept="image/*">
+  </div>
+  <div class="cell c-3" data-id="5">
+    <div class="cell-img">
+      <div class="cell-overlay"><div class="overlay-icon"><svg viewBox="0 0 14 14" fill="none" stroke="#000" stroke-width="1.4" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg></div></div>
+      <button class="cell-remove"><svg viewBox="0 0 8 8" fill="none" stroke-linecap="round"><line x1="1" y1="1" x2="7" y2="7"/><line x1="7" y1="1" x2="1" y2="7"/></svg></button>
+    </div>
+    <div class="caption"><div class="cap1" contenteditable="true">Category ↗</div><div class="cap2" contenteditable="true">Title – Project Name</div><div class="cap3" contenteditable="true">Description</div><div class="cap4" contenteditable="true">https://</div></div>
+    <input type="file" class="file-input" accept="image/*">
+  </div>
+  <div class="cell c-3" data-id="6">
+    <div class="cell-img">
+      <div class="cell-overlay"><div class="overlay-icon"><svg viewBox="0 0 14 14" fill="none" stroke="#000" stroke-width="1.4" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg></div></div>
+      <button class="cell-remove"><svg viewBox="0 0 8 8" fill="none" stroke-linecap="round"><line x1="1" y1="1" x2="7" y2="7"/><line x1="7" y1="1" x2="1" y2="7"/></svg></button>
+    </div>
+    <div class="caption"><div class="cap1" contenteditable="true">Category ↗</div><div class="cap2" contenteditable="true">Title – Project Name</div><div class="cap3" contenteditable="true">Description</div><div class="cap4" contenteditable="true">https://</div></div>
+    <input type="file" class="file-input" accept="image/*">
+  </div>
+  <div class="cell c-3" data-id="7">
+    <div class="cell-img">
+      <div class="cell-overlay"><div class="overlay-icon"><svg viewBox="0 0 14 14" fill="none" stroke="#000" stroke-width="1.4" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg></div></div>
+      <button class="cell-remove"><svg viewBox="0 0 8 8" fill="none" stroke-linecap="round"><line x1="1" y1="1" x2="7" y2="7"/><line x1="7" y1="1" x2="1" y2="7"/></svg></button>
+    </div>
+    <div class="caption"><div class="cap1" contenteditable="true">Category ↗</div><div class="cap2" contenteditable="true">Title – Project Name</div><div class="cap3" contenteditable="true">Description</div><div class="cap4" contenteditable="true">https://</div></div>
+    <input type="file" class="file-input" accept="image/*">
+  </div>
+</div></section>
+
+<!-- Section 3 · 3+3+3+3 / row-gap / 3 — hidden for interfaces via CSS -->
+<section class="section" id="section-static-3"><div class="grid">
+  <div class="cell c-3" data-id="9">
+    <div class="cell-img">
+      <div class="cell-overlay"><div class="overlay-icon"><svg viewBox="0 0 14 14" fill="none" stroke="#000" stroke-width="1.4" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg></div></div>
+      <button class="cell-remove"><svg viewBox="0 0 8 8" fill="none" stroke-linecap="round"><line x1="1" y1="1" x2="7" y2="7"/><line x1="7" y1="1" x2="1" y2="7"/></svg></button>
+    </div>
+    <div class="caption"><div class="cap1" contenteditable="true">Category ↗</div><div class="cap2" contenteditable="true">Title – Project Name</div><div class="cap3" contenteditable="true">Description</div><div class="cap4" contenteditable="true">https://</div></div>
+    <input type="file" class="file-input" accept="image/*">
+  </div>
+  <div class="cell c-3" data-id="10">
+    <div class="cell-img">
+      <div class="cell-overlay"><div class="overlay-icon"><svg viewBox="0 0 14 14" fill="none" stroke="#000" stroke-width="1.4" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg></div></div>
+      <button class="cell-remove"><svg viewBox="0 0 8 8" fill="none" stroke-linecap="round"><line x1="1" y1="1" x2="7" y2="7"/><line x1="7" y1="1" x2="1" y2="7"/></svg></button>
+    </div>
+    <div class="caption"><div class="cap1" contenteditable="true">Category ↗</div><div class="cap2" contenteditable="true">Title – Project Name</div><div class="cap3" contenteditable="true">Description</div><div class="cap4" contenteditable="true">https://</div></div>
+    <input type="file" class="file-input" accept="image/*">
+  </div>
+  <div class="cell c-3" data-id="11">
+    <div class="cell-img">
+      <div class="cell-overlay"><div class="overlay-icon"><svg viewBox="0 0 14 14" fill="none" stroke="#000" stroke-width="1.4" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg></div></div>
+      <button class="cell-remove"><svg viewBox="0 0 8 8" fill="none" stroke-linecap="round"><line x1="1" y1="1" x2="7" y2="7"/><line x1="7" y1="1" x2="1" y2="7"/></svg></button>
+    </div>
+    <div class="caption"><div class="cap1" contenteditable="true">Category ↗</div><div class="cap2" contenteditable="true">Title – Project Name</div><div class="cap3" contenteditable="true">Description</div><div class="cap4" contenteditable="true">https://</div></div>
+    <input type="file" class="file-input" accept="image/*">
+  </div>
+  <div class="cell c-3" data-id="12">
+    <div class="cell-img">
+      <div class="cell-overlay"><div class="overlay-icon"><svg viewBox="0 0 14 14" fill="none" stroke="#000" stroke-width="1.4" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg></div></div>
+      <button class="cell-remove"><svg viewBox="0 0 8 8" fill="none" stroke-linecap="round"><line x1="1" y1="1" x2="7" y2="7"/><line x1="7" y1="1" x2="1" y2="7"/></svg></button>
+    </div>
+    <div class="caption"><div class="cap1" contenteditable="true">Category ↗</div><div class="cap2" contenteditable="true">Title – Project Name</div><div class="cap3" contenteditable="true">Description</div><div class="cap4" contenteditable="true">https://</div></div>
+    <input type="file" class="file-input" accept="image/*">
+  </div>
+</div></section>
+
+<!-- Extra images (added via + Add Image) — one <section> per row group, created by JS -->
+<div id="dyn-container"></div>
+
+<!-- Password modal -->
+<div class="modal-bg" id="pwd-modal">
+  <div class="modal">
+    <h3>Enter upload password</h3>
+    <input type="password" id="pwd-input" placeholder="Password" autocomplete="current-password">
+    <div class="modal-err" id="pwd-err">Incorrect password — try again</div>
+    <div class="modal-btns">
+      <button class="mbtn mbtn-ghost" id="pwd-cancel">Cancel</button>
+      <button class="mbtn mbtn-solid" id="pwd-confirm">Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit metadata modal -->
+<div class="edit-modal-bg" id="edit-modal">
+  <div class="edit-modal">
+    <div class="edit-modal-header">
+      <span class="edit-modal-title">Edit</span>
+      <button class="edit-modal-x" id="edit-modal-x">×</button>
+    </div>
+    <div class="edit-field">
+      <div class="edit-label">Title</div>
+      <input class="edit-input" id="em-cap1" type="text" placeholder="Project name">
+    </div>
+    <div class="edit-field">
+      <div class="edit-label">Subtitle</div>
+      <input class="edit-input" id="em-cap2" type="text" placeholder="Category or subtitle">
+    </div>
+    <div class="edit-field">
+      <div class="edit-label">Small Title</div>
+      <input class="edit-input" id="em-cap5" type="text" placeholder="e.g. Norgram">
+    </div>
+    <div class="edit-field">
+      <div class="edit-label">Small Description</div>
+      <input class="edit-input" id="em-cap6" type="text" placeholder="e.g. Interface & Branding">
+    </div>
+    <div class="edit-field">
+      <div class="edit-label">Tags / Type</div>
+      <input class="edit-input" id="em-cap3" type="text" placeholder="Type, medium, platform…">
+    </div>
+    <div class="edit-field">
+      <div class="edit-label">Project URL</div>
+      <input class="edit-input" id="em-cap4" type="text" placeholder="https://">
+    </div>
+    <div class="edit-modal-actions">
+      <button class="edit-btn" id="em-change-img">Change Image</button>
+      <button class="edit-btn edit-btn-primary" id="em-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  /* ── Section (graphic | studio) ─────────────────── */
+  const section        = new URLSearchParams(location.search).get('section') || 'interfaces';
+  const API_BASE       = section === 'studio' ? '/api/studio' : section === 'interfaces' ? '/api/interfaces' : '/api';
+  const UPLOADS_PREFIX = section === 'studio' ? '/uploads-studio/' : section === 'interfaces' ? '/uploads-interfaces/' : '/uploads/';
+  const CAPS      = `gallery_captions_v1_${section}`;
+  // interfaces uses uniform 3-column layout (IDs 0-8 static, 9+ dynamic)
+  const IS_IFACE  = section === 'interfaces';
+  const FIXED_MAX = IS_IFACE ? 7 : 12;
+
+  // Set hero title, mark active nav link, tag body for CSS
+  const heroEl = document.getElementById('hero-title');
+  heroEl.innerHTML = 'NineSixteen<span style="font-size:0.25em;vertical-align:super;letter-spacing:-4px;">™</span>';
+  document.querySelectorAll('.nav-item[data-section]').forEach(a => {
+    a.classList.toggle('active', a.dataset.section === section);
+  });
+  document.body.dataset.section = section;
+
+  // Repeating row pattern for dynamic overflow cells
+  // interfaces: 2-column c-6 pairs; others: Row1 → Row2 → Row3 cycle
+  const DYNAMIC_PATTERN = IS_IFACE ? [
+    {col:'c-3', ratio:'r-3-2'}, {col:'c-3', ratio:'r-3-4'}, {col:'c-3', ratio:'r-4-3'}, {col:'c-3', ratio:'r-3-4'},
+    {col:'c-3', ratio:'r-4-3'}, {col:'c-3', ratio:'r-3-2'}, {col:'c-3', ratio:'r-2-3'}, {col:'c-3', ratio:'r-4-3'},
+    {col:'c-3', ratio:'r-3-4'}, {col:'c-3', ratio:'r-4-3'}, {col:'c-3', ratio:'r-3-2'}, {col:'c-3', ratio:'r-3-4'},
+    {col:'c-3', ratio:'r-4-3'}, {col:'c-3', ratio:'r-3-4'}, {col:'c-3', ratio:'r-4-3'}, {col:'c-3', ratio:'r-3-2'},
+  ] : [
+    {col:'c-4', ratio:'r-4-3'}, // Row 1
+    {col:'c-4', ratio:'r-3-4'},
+    {col:'c-4', ratio:'r-4-3'},
+    {col:'c-3', ratio:'r-3-4'}, // Row 2
+    {col:'c-6', ratio:'r-3-2'},
+    {col:'c-3', ratio:'r-3-4'},
+    {col:'c-3', ratio:'r-3-2'}, // Row 3
+    {col:'c-3', ratio:'r-2-3'},
+    {col:'c-3', ratio:'r-3-2'},
+    {col:'c-3', ratio:'r-3-2'},
+  ];
+
+  const ROW_STARTS = IS_IFACE ? [0] : [0, 3, 6];
+  const CYCLE      = IS_IFACE ? 4  : 10;
+
+  function getPatternForId(id) {
+    const dynIndex = id - (FIXED_MAX + 1);
+    const len = DYNAMIC_PATTERN.length;
+    return DYNAMIC_PATTERN[((dynIndex % len) + len) % len];
+  }
+
+  const dynContainer = document.getElementById('dyn-container');
+  const cells        = Array.from(document.querySelectorAll('.cell[data-id]'));
+
+  // Returns (or creates) the .grid inside the section for a given row-group number.
+  // Each row group gets its own <section class="section"> so spacing matches fixed rows.
+  function getDynGrid(rg) {
+    let sec = dynContainer.querySelector(`[data-rg="${rg}"]`);
+    if (!sec) {
+      sec = document.createElement('section');
+      const useRow2 = IS_IFACE ? false : rg % 3 === 1;
+      sec.className = 'section' + (useRow2 ? ' row2' : '');
+      sec.dataset.rg = String(rg);
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+      sec.appendChild(grid);
+      dynContainer.appendChild(sec);
+    }
+    return sec.querySelector('.grid');
+  }
+
+  /* ── Password ───────────────────────────────────── */
+  function getPwd()       { return sessionStorage.getItem('gallery_pwd'); }
+  function setPwd(p)      { sessionStorage.setItem('gallery_pwd', p); }
+  function clearPwd()     { sessionStorage.removeItem('gallery_pwd'); }
+
+  let pendingCell  = null;
+  let pendingFile  = null;
+  let pendingAction = null; // 'upload' | 'delete'
+
+  const modal     = document.getElementById('pwd-modal');
+  const pwdInput  = document.getElementById('pwd-input');
+  const pwdErr    = document.getElementById('pwd-err');
+  const pwdCancel = document.getElementById('pwd-cancel');
+  const pwdOk     = document.getElementById('pwd-confirm');
+
+  function showModal(cell, action, file) {
+    pendingCell   = cell;
+    pendingAction = action;
+    pendingFile   = file || null;
+    pwdInput.value = '';
+    pwdErr.style.display = 'none';
+    // hide Cancel + backdrop-dismiss on initial auth prompt
+    const isInit = action === 'init';
+    pwdCancel.style.display = isInit ? 'none' : '';
+    modal.querySelector('h3').textContent = isInit
+      ? 'Enter admin password' : 'Enter upload password';
+    modal.classList.add('open');
+    setTimeout(() => pwdInput.focus(), 50);
+  }
+
+  pwdCancel.onclick = () => {
+    modal.classList.remove('open');
+    pendingCell = pendingFile = pendingAction = null;
+  };
+
+  pwdOk.onclick = async () => {
+    const pwd = pwdInput.value.trim();
+    if (!pwd) return;
+    const res  = await fetch('/api/auth', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({password: pwd})
+    });
+    const data = await res.json();
+    if (!data.ok) { pwdErr.style.display = 'block'; return; }
+    setPwd(pwd);
+    modal.classList.remove('open');
+
+    if (pendingAction === 'init') {
+      const caps = getCaps();
+      if (Object.keys(caps).length) {
+        fetch(`${API_BASE}/captions`, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json','x-upload-password': pwd},
+          body: JSON.stringify(caps)
+        }).catch(()=>{});
+      }
+    } else if (pendingAction === 'add-image-click' && pendingCell) {
+      pendingCell.querySelector('.add-file-input').click();
+    } else if (pendingAction === 'add-image-drag' && pendingCell && pendingFile) {
+      uploadToNewCell(pendingCell, pendingFile);
+    } else if (pendingAction === 'upload' && pendingCell && pendingFile) {
+      doUpload(pendingCell, pendingFile);
+    } else if (pendingAction === 'delete' && pendingCell) {
+      doDelete(pendingCell);
+    }
+    pendingCell = pendingFile = pendingAction = null;
+  };
+
+  pwdInput.addEventListener('keydown', e => { if (e.key === 'Enter') pwdOk.click(); });
+  // don't dismiss on backdrop click during initial auth
+  modal.addEventListener('click', e => {
+    if (e.target === modal && pendingAction !== 'init') pwdCancel.onclick();
+  });
+
+  /* ── Upload ─────────────────────────────────────── */
+  async function doUpload(cell, file) {
+    const pwd = getPwd();
+    const box = cell.querySelector('.cell-img');
+    box.classList.add('loading');
+    const form = new FormData();
+    form.append('images', file);
+    form.append('cell_id', cell.dataset.id);
+    try {
+      const res = await fetch(`${API_BASE}/upload`, {
+        method: 'POST', headers: {'x-upload-password': pwd}, body: form
+      });
+      box.classList.remove('loading');
+      if (res.status === 401) { clearPwd(); showModal(cell, 'upload', file); return; }
+      const data = await res.json();
+      if (data.success && data.files[0]) {
+        applyImage(cell, data.files[0].url);
+        cell.dataset.imageName = data.files[0].name;
+        refreshAddRow();
+      }
+    } catch(e) { box.classList.remove('loading'); }
+  }
+
+  /* ── Delete ─────────────────────────────────────── */
+  async function doDelete(cell) {
+    const pwd  = getPwd();
+    const name = cell.dataset.imageName;
+    if (!name) {
+      // Empty cell — just clean up DOM, no server call needed
+      removeImageEl(cell);
+      if (parseInt(cell.dataset.id, 10) > FIXED_MAX) cell.remove();
+      refreshAddRow();
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE}/images/` + name, {
+        method: 'DELETE', headers: {'x-upload-password': pwd}
+      });
+      if (res.status === 401) { clearPwd(); showModal(cell, 'delete', null); return; }
+      if (res.ok) {
+        await reorganizeAllCells();
+        refreshAddRow();
+      }
+    } catch(e) {}
+  }
+
+  /* ── Reorganize ALL cells after deletion ────────────
+     Fetches the current server image list, assigns sequential
+     IDs starting at 0, renames files on server, then reloads
+     the entire admin grid so every image fills forward.       */
+  async function reorganizeAllCells() {
+    const pwd = getPwd() || '';
+    try {
+      // Get fresh image list (deleted file is already gone)
+      const imgRes = await fetch(`${API_BASE}/images`, { cache: 'no-store' });
+      const images = await imgRes.json();
+
+      const sorted = images
+        .filter(img => img.cell_id != null)
+        .sort((a, b) => a.cell_id - b.cell_id);
+
+      // Map each image to a sequential ID 0, 1, 2, …
+      const mappings = sorted
+        .map((img, idx) => ({ oldId: img.cell_id, newId: idx }))
+        .filter(m => m.oldId !== m.newId);
+
+      if (mappings.length) {
+        await fetch(`${API_BASE}/reorganize`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-upload-password': pwd },
+          body: JSON.stringify({ mappings })
+        });
+      }
+
+      // Clear all visible static cell images and wipe dynamic container
+      dynContainer.innerHTML = '';
+      document.querySelectorAll('.cell[data-id]').forEach(c => {
+        if (getComputedStyle(c).display === 'none') return;
+        removeImageEl(c);
+        delete c.dataset.imageName;
+      });
+
+      // Reload everything from server
+      await loadImages();
+    } catch(e) {}
+  }
+
+  /* ── LEGACY stub — no longer called ─────────────── */
+  async function reorganizeDynamicCells() {}
+
+  /* ── Image helpers ──────────────────────────────── */
+  function applyImage(cell, src) {
+    const box = cell.querySelector('.cell-img');
+    let img = box.querySelector('img');
+    if (!img) { img = document.createElement('img'); img.alt=''; img.setAttribute('draggable', 'false'); box.insertBefore(img, box.firstChild); }
+    img.src = src;
+    cell.setAttribute('draggable', 'true');
+  }
+
+  function removeImageEl(cell) {
+    const img = cell.querySelector('.cell-img img');
+    if (img) img.remove();
+    delete cell.dataset.imageName;
+  }
+
+  /* ── Caption persistence (localStorage + server) ── */
+  function getCaps()  { try { return JSON.parse(localStorage.getItem(CAPS))||{}; } catch{ return {}; } }
+  function saveCap(id, c1, c2, c3, c4, c5, c6) {
+    const d = getCaps();
+    const prev = d[id] || {};
+    d[id] = { c1, c2, c3, c4, c5: c5 ?? prev.c5 ?? '', c6: c6 ?? prev.c6 ?? '' };
+    try { localStorage.setItem(CAPS, JSON.stringify(d)); } catch{}
+    // debounced server save
+    clearTimeout(saveCap._t);
+    saveCap._t = setTimeout(() => {
+      fetch(`${API_BASE}/captions`, { method:'POST',
+        headers:{'Content-Type':'application/json', 'x-upload-password': getPwd()||''},
+        body: JSON.stringify(d) }).catch(()=>{});
+    }, 600);
+  }
+
+  /* ── Cell factory (SVG icons inlined) ───────────── */
+  const OVERLAY_SVG = `<div class="cell-overlay"><div class="overlay-icon"><svg viewBox="0 0 14 14" fill="none" stroke="#000" stroke-width="1.4" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg></div></div>`;
+  const REMOVE_SVG  = `<button class="cell-remove"><svg viewBox="0 0 8 8" fill="none" stroke-linecap="round"><line x1="1" y1="1" x2="7" y2="7"/><line x1="7" y1="1" x2="1" y2="7"/></svg></button>`;
+
+  function createDynamicCell(id) {
+    const pat  = getPatternForId(id);
+    const cell = document.createElement('div');
+    cell.className = `cell ${pat.col}`;
+    cell.dataset.id = String(id);
+    cell.innerHTML = `
+      <div class="cell-img">${OVERLAY_SVG}${REMOVE_SVG}</div>
+      <div class="caption">
+        <div class="cap1" contenteditable="true">Category ↗</div>
+        <div class="cap2" contenteditable="true">Title – Project Name</div>
+        <div class="cap3" contenteditable="true">Description</div>
+        <div class="cap4" contenteditable="true">https://</div>
+      </div>
+      <input type="file" class="file-input" accept="image/*">`;
+    return cell;
+  }
+
+  /* ── Edit metadata modal ─────────────────────────── */
+  const editModal = document.getElementById('edit-modal');
+  const emCap1    = document.getElementById('em-cap1');
+  const emCap2    = document.getElementById('em-cap2');
+  const emCap3    = document.getElementById('em-cap3');
+  const emCap4    = document.getElementById('em-cap4');
+  const emCap5    = document.getElementById('em-cap5');
+  const emCap6    = document.getElementById('em-cap6');
+  let   editCell  = null;
+
+  function openEditModal(cell) {
+    editCell = cell;
+    const saved = getCaps()[cell.dataset.id] || {};
+    emCap1.value = cell.querySelector('.cap1')?.innerText.trim() || '';
+    emCap2.value = cell.querySelector('.cap2')?.innerText.trim() || '';
+    emCap3.value = cell.querySelector('.cap3')?.innerText.trim() || '';
+    emCap4.value = cell.querySelector('.cap4')?.innerText.trim() || '';
+    emCap5.value = saved.c5 || '';
+    emCap6.value = saved.c6 || '';
+    editModal.classList.add('open');
+    setTimeout(() => emCap1.focus(), 50);
+  }
+
+  function closeEditModal() { editModal.classList.remove('open'); editCell = null; }
+
+  function saveEditModal() {
+    if (!editCell) return;
+    const id = editCell.dataset.id;
+    const c1 = emCap1.value, c2 = emCap2.value, c3 = emCap3.value, c4 = emCap4.value;
+    const c5 = emCap5.value, c6 = emCap6.value;
+    const el1 = editCell.querySelector('.cap1'); if (el1) el1.innerText = c1;
+    const el2 = editCell.querySelector('.cap2'); if (el2) el2.innerText = c2;
+    const el3 = editCell.querySelector('.cap3'); if (el3) el3.innerText = c3;
+    const el4 = editCell.querySelector('.cap4'); if (el4) el4.innerText = c4;
+    saveCap(id, c1, c2, c3, c4, c5, c6);
+    closeEditModal();
+  }
+
+  document.getElementById('edit-modal-x').addEventListener('click', closeEditModal);
+  editModal.addEventListener('click', e => { if (e.target === editModal) closeEditModal(); });
+  document.getElementById('em-save').addEventListener('click', saveEditModal);
+  [emCap1, emCap2, emCap3, emCap4, emCap5, emCap6].forEach(inp =>
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') saveEditModal(); })
+  );
+  document.getElementById('em-change-img').addEventListener('click', () => {
+    const cell = editCell;
+    closeEditModal();
+    if (cell) cell.querySelector('.file-input')?.click();
+  });
+
+  /* ── Wire a single cell ──────────────────────────── */
+  function wireCell(cell) {
+    const box   = cell.querySelector('.cell-img');
+    const input = cell.querySelector('.file-input');
+    const rmBtn = cell.querySelector('.cell-remove');
+    const cap1  = cell.querySelector('.cap1');
+    const cap2  = cell.querySelector('.cap2');
+    const cap3  = cell.querySelector('.cap3');
+    const cap4  = cell.querySelector('.cap4');
+    const id    = cell.dataset.id;
+
+    box.addEventListener('click', e => {
+      if (e.target === rmBtn || rmBtn.contains(e.target)) return;
+      if (cell.dataset.imageName) { openEditModal(cell); } else { input.click(); }
+    });
+    input.addEventListener('change', () => {
+      const file = input.files[0]; if (!file) return;
+      input.value = '';
+      if (!file.type.startsWith('image/')) return;
+      if (getPwd()) doUpload(cell, file); else showModal(cell, 'upload', file);
+    });
+    box.addEventListener('dragover', e => { e.preventDefault(); box.style.opacity='.75'; });
+    box.addEventListener('dragleave', () => { box.style.opacity=''; });
+    box.addEventListener('drop', e => {
+      box.style.opacity='';
+      const file = e.dataTransfer.files[0];
+      if (!file || !file.type.startsWith('image/')) return; // let cell-swap drop bubble up
+      e.preventDefault(); e.stopPropagation();
+      if (getPwd()) doUpload(cell, file); else showModal(cell, 'upload', file);
+    });
+    rmBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      if (getPwd()) doDelete(cell); else showModal(cell, 'delete', null);
+    });
+    [cap1, cap2, cap3, cap4].forEach(el => {
+      el.addEventListener('input', () =>
+        saveCap(id, cap1.innerText, cap2.innerText, cap3.innerText, cap4.innerText));
+    });
+
+    wireDrag(cell);
+  }
+
+  // wire all static cells
+  cells.forEach(wireCell);
+
+  /* ── Add-image placeholder cell ──────────────────── */
+  function nextAvailableId() {
+    const usedIds = Array.from(document.querySelectorAll('.cell[data-id]'))
+      .filter(c => getComputedStyle(c).display !== 'none')
+      .map(c => parseInt(c.dataset.id, 10)).filter(n => !isNaN(n));
+    return Math.max(FIXED_MAX, ...usedIds) + 1;
+  }
+
+  function uploadToNewCell(addCell, file) {
+    const nextId = addCell.dataset.targetId !== undefined
+      ? parseInt(addCell.dataset.targetId, 10)
+      : nextAvailableId();
+    const pat    = getPatternForId(nextId);
+    addCell.classList.remove('add-cell');
+    addCell.dataset.id = String(nextId);
+    addCell.className  = `cell ${pat.col}`;
+    addCell.innerHTML = `
+      <div class="cell-img">${OVERLAY_SVG}${REMOVE_SVG}</div>
+      <div class="caption">
+        <div class="cap1" contenteditable="true">Category ↗</div>
+        <div class="cap2" contenteditable="true">Title – Project Name</div>
+        <div class="cap3" contenteditable="true">Description</div>
+        <div class="cap4" contenteditable="true">https://</div>
+      </div>
+      <input type="file" class="file-input" accept="image/*">`;
+    wireCell(addCell);
+    doUpload(addCell, file);
+  }
+
+  function createAddCell(pat, targetId) {
+    const {col, ratio} = pat || {col:'c-4', ratio:'r-4-3'};
+    const cell = document.createElement('div');
+    cell.className = `cell ${col} add-cell`;
+    if (targetId !== undefined) cell.dataset.targetId = String(targetId);
+    cell.innerHTML = `
+      <div class="cell-img">
+        <div class="cell-overlay"><div class="overlay-icon"><svg viewBox="0 0 14 14" fill="none" stroke="#000" stroke-width="1.4" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg></div></div>
+      </div>
+      <input type="file" class="add-file-input" accept="image/*" style="display:none">`;
+    const box   = cell.querySelector('.cell-img');
+    const input = cell.querySelector('.add-file-input');
+    box.addEventListener('click', () => {
+      if (getPwd()) input.click(); else showModal(cell, 'add-image-click', null);
+    });
+    input.addEventListener('change', () => {
+      const file = input.files[0]; if (!file) return;
+      input.value = '';
+      if (!file.type.startsWith('image/')) return;
+      uploadToNewCell(cell, file);
+    });
+    box.addEventListener('dragover', e => { e.preventDefault(); box.style.opacity='.75'; });
+    box.addEventListener('dragleave', () => { box.style.opacity=''; });
+    box.addEventListener('drop', e => {
+      e.preventDefault(); box.style.opacity='';
+      const file = e.dataTransfer.files[0];
+      if (!file || !file.type.startsWith('image/')) return;
+      if (getPwd()) uploadToNewCell(cell, file);
+      else showModal(cell, 'add-image-drag', file);
+    });
+    return cell;
+  }
+
+  // Returns a combined "global row" number for gap detection:
+  // row 0 = Row1 cycle0, row 1 = Row2 cycle0, row 2 = Row3 cycle0, row 3 = Row1 cycle1 …
+  function dynRowGroup(di) {
+    const p = di % CYCLE;
+    let r = 0;
+    for (let i = ROW_STARTS.length - 1; i >= 0; i--) {
+      if (p >= ROW_STARTS[i]) { r = i; break; }
+    }
+    return Math.floor(di / CYCLE) * ROW_STARTS.length + r;
+  }
+
+  function refreshAddRow() {
+    // Remove the single add-cell from wherever it currently lives
+    const old = dynContainer.querySelector('.add-cell');
+    if (old) old.remove();
+    // Clean up any row-group sections that have no real cells
+    dynContainer.querySelectorAll('section').forEach(s => {
+      if (!s.querySelector('.cell[data-id]')) s.remove();
+    });
+
+    const nextId = nextAvailableId();
+    const di     = nextId - (FIXED_MAX + 1);
+    const rg     = dynRowGroup(di);
+
+    // Add the single add-cell into the correct row-group section
+    getDynGrid(rg).appendChild(createAddCell(getPatternForId(nextId), nextId));
+  }
+
+  /* ── Apply captions to any cell ─────────────────── */
+  function applyCaptions(cell, saved) {
+    if (!saved) return;
+    const cap1 = cell.querySelector('.cap1');
+    const cap2 = cell.querySelector('.cap2');
+    const cap3 = cell.querySelector('.cap3');
+    const cap4 = cell.querySelector('.cap4');
+    if (saved.c1 !== undefined) cap1.innerText = saved.c1;
+    if (saved.c2 !== undefined) cap2.innerText = saved.c2;
+    if (saved.c3 !== undefined) cap3.innerText = saved.c3;
+    if (saved.c4 !== undefined) cap4.innerText = saved.c4;
+  }
+
+  /* ── Load images + captions from server ─────────── */
+  async function loadImages() { // returns promise
+    try {
+      const [imgRes, capRes] = await Promise.all([
+        fetch(`${API_BASE}/images`), fetch(`${API_BASE}/captions`)
+      ]);
+      const images  = await imgRes.json();
+      const capData = await capRes.json();
+
+      const local = getCaps();
+      Object.assign(local, capData);
+      try { localStorage.setItem(CAPS, JSON.stringify(local)); } catch {}
+
+      // Helper: find the visible cell for a given id (hidden static cells don't count)
+      function visibleCell(id) {
+        const all = document.querySelectorAll(`.cell[data-id="${id}"]`);
+        return Array.from(all).find(c => getComputedStyle(c).display !== 'none') || null;
+      }
+
+      // restore dynamic cells sorted by id, placing each in its row-group section.
+      // A hidden static cell (e.g. cells 9-12 for interfaces) does NOT block this —
+      // we still create a visible dynamic cell so rows stay complete.
+      images
+        .filter(img => img.cell_id != null && img.cell_id > FIXED_MAX)
+        .sort((a, b) => a.cell_id - b.cell_id)
+        .forEach(img => {
+          if (visibleCell(img.cell_id)) return; // already have a visible cell
+          const rg   = dynRowGroup(img.cell_id - (FIXED_MAX + 1));
+          const cell = createDynamicCell(img.cell_id);
+          getDynGrid(rg).appendChild(cell);
+          wireCell(cell);
+        });
+
+      // place all images — always into a visible cell
+      images.forEach(img => {
+        if (img.cell_id == null) return;
+        const cell = visibleCell(img.cell_id);
+        if (!cell) return;
+        applyImage(cell, img.url);
+        cell.dataset.imageName = img.name;
+      });
+
+      // apply captions — skip hidden cells
+      document.querySelectorAll('.cell[data-id]').forEach(cell => {
+        if (getComputedStyle(cell).display === 'none') return;
+        applyCaptions(cell, local[cell.dataset.id]);
+      });
+    } catch(e) {}
+  }
+
+  async function updateNavCounts() {
+    try {
+      const fmt = n => n < 10 ? '0' + n : String(n);
+      const [gRes, sRes, iRes] = await Promise.all([fetch('/api/images'), fetch('/api/studio/images'), fetch('/api/interfaces/images')]);
+      const gImgs = await gRes.json();
+      const sImgs = await sRes.json();
+      const iImgs = await iRes.json();
+      const el = id => document.getElementById(id);
+      if (el('count-graphics'))   el('count-graphics').textContent   = fmt(gImgs.filter(i => i.cell_id != null).length);
+      if (el('count-studios'))    el('count-studios').textContent    = fmt(sImgs.filter(i => i.cell_id != null).length);
+      if (el('count-interfaces')) el('count-interfaces').textContent = fmt(iImgs.filter(i => i.cell_id != null).length);
+      if (el('count-designers'))  el('count-designers').textContent  = '—';
+    } catch(e) {}
+  }
+
+  /* ── Drag-to-reorder ──────────────────────────────── */
+  let dragSrcCell = null;
+
+  function wireDrag(cell) {
+    cell.addEventListener('dragstart', e => {
+      if (!cell.dataset.imageName) { e.preventDefault(); return; }
+      dragSrcCell = cell;
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', cell.dataset.id);
+      requestAnimationFrame(() => cell.classList.add('dragging'));
+    });
+    cell.addEventListener('dragend', () => {
+      cell.classList.remove('dragging');
+      document.querySelectorAll('.drag-over').forEach(c => c.classList.remove('drag-over'));
+      dragSrcCell = null;
+    });
+    cell.addEventListener('dragover', e => {
+      if (!dragSrcCell || dragSrcCell === cell || !cell.dataset.imageName) return;
+      e.preventDefault();
+      cell.classList.add('drag-over');
+    });
+    cell.addEventListener('dragleave', e => {
+      if (!cell.contains(e.relatedTarget)) cell.classList.remove('drag-over');
+    });
+    cell.addEventListener('drop', e => {
+      e.preventDefault();
+      cell.classList.remove('drag-over');
+      if (!dragSrcCell || dragSrcCell === cell || !cell.dataset.imageName) return;
+      swapCells(dragSrcCell, cell);
+    });
+  }
+
+  async function swapCells(src, tgt) {
+    const srcId = src.dataset.id;
+    const tgtId = tgt.dataset.id;
+
+    // Swap img src
+    const srcImg = src.querySelector('.cell-img img');
+    const tgtImg = tgt.querySelector('.cell-img img');
+    if (srcImg && tgtImg) {
+      const tmp = srcImg.src; srcImg.src = tgtImg.src; tgtImg.src = tmp;
+    }
+
+    // Swap dataset.imageName
+    const tmpName = src.dataset.imageName;
+    src.dataset.imageName = tgt.dataset.imageName;
+    tgt.dataset.imageName = tmpName;
+
+    // Swap captions
+    ['cap1','cap2','cap3','cap4'].forEach(cf => {
+      const a = src.querySelector(`.${cf}`);
+      const b = tgt.querySelector(`.${cf}`);
+      if (a && b) { const t = a.innerText; a.innerText = b.innerText; b.innerText = t; }
+    });
+
+    // Persist captions locally + to server
+    const caps = getCaps();
+    caps[srcId] = { c1: src.querySelector('.cap1').innerText, c2: src.querySelector('.cap2').innerText, c3: src.querySelector('.cap3').innerText, c4: src.querySelector('.cap4').innerText };
+    caps[tgtId] = { c1: tgt.querySelector('.cap1').innerText, c2: tgt.querySelector('.cap2').innerText, c3: tgt.querySelector('.cap3').innerText, c4: tgt.querySelector('.cap4').innerText };
+    try { localStorage.setItem(CAPS, JSON.stringify(caps)); } catch {}
+
+    const pwd = getPwd();
+    if (pwd) {
+      await Promise.all([
+        fetch(`${API_BASE}/reorganize`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-upload-password': pwd },
+          body: JSON.stringify({ mappings: [{ oldId: +srcId, newId: +tgtId }, { oldId: +tgtId, newId: +srcId }] })
+        }),
+        fetch(`${API_BASE}/captions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-upload-password': pwd },
+          body: JSON.stringify(caps)
+        })
+      ]);
+    }
+  }
+
+  loadImages().then(() => refreshAddRow());
+  updateNavCounts();
+
+  if (!getPwd()) setTimeout(() => showModal(null, 'init', null), 200);
+})();
+</script>
+</body>
+</html>

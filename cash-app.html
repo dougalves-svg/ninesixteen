@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cash App</title>
+  <style>
+    @font-face {
+      font-family: "FT System Trial";
+      src: url("/Users/dougalves/Library/Fonts/FTSystemTrial-GroteskRegular.otf") format("opentype");
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "FT System Trial";
+      src: url("/Users/dougalves/Library/Fonts/FTSystemTrial-GroteskRegularItalic.otf") format("opentype");
+      font-weight: 400;
+      font-style: italic;
+    }
+    @font-face {
+      font-family: "FT System Trial";
+      src: url("/Users/dougalves/Library/Fonts/FTSystemTrial-GroteskMedium.otf") format("opentype");
+      font-weight: 500;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "FT System Trial";
+      src: url("/Users/dougalves/Library/Fonts/FTSystemTrial-GroteskSemibold.otf") format("opentype");
+      font-weight: 600;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "FT System Trial";
+      src: url("/Users/dougalves/Library/Fonts/FTSystemTrial-GroteskBold.otf") format("opentype");
+      font-weight: 700;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "FT System Trial";
+      src: url("/Users/dougalves/Library/Fonts/FTSystemTrial-GroteskBlack.otf") format("opentype");
+      font-weight: 900;
+      font-style: normal;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #00D632;
+      --yellow-green: #C8FF00;
+      --black: #000000;
+      --white: #ffffff;
+      --bg-gray: #F4F4F4;
+      --border: #D8D8D8;
+      --text-sm: 11px;
+      --font: "FT System Trial", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--black);
+      background: var(--white);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-left {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--black);
+      font-size: 13px;
+    }
+
+    /* ─── HERO ─── */
+    .hero {
+      padding: 48px 24px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero h1 {
+      font-size: clamp(72px, 10vw, 120px);
+      font-weight: 100;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 32px;
+    }
+
+    /* ─── SUB-NAV ─── */
+    .sub-nav {
+      display: grid;
+      grid-template-columns: 150px repeat(2, 120px);
+      gap: 0;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      font-size: var(--text-sm);
+      color: #666;
+    }
+
+    .sub-nav-col {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .sub-nav-col a {
+      text-decoration: none;
+      color: #333;
+      font-size: var(--text-sm);
+    }
+
+    /* ─── PHONE SECTION ─── */
+    .phone-section {
+      background: var(--bg-gray);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 80px 24px;
+      min-height: 560px;
+    }
+
+    .phone {
+      width: 160px;
+      height: 330px;
+      background: var(--green);
+      border-radius: 36px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 0 8px #1a1a1a, 0 20px 60px rgba(0,0,0,0.25);
+      overflow: hidden;
+    }
+
+    .phone.large {
+      width: 200px;
+      height: 420px;
+      border-radius: 44px;
+    }
+
+    .phone-status {
+      position: absolute;
+      top: 14px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 18px;
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--black);
+    }
+
+    .phone-status-icons {
+      display: flex;
+      gap: 3px;
+      align-items: center;
+    }
+
+    .bar { width: 3px; height: 8px; background: var(--black); border-radius: 1px; }
+    .bar:nth-child(1) { height: 4px; }
+    .bar:nth-child(2) { height: 6px; }
+    .bar:nth-child(3) { height: 8px; }
+    .bar:nth-child(4) { height: 10px; }
+
+    .wifi-icon {
+      width: 10px;
+      height: 8px;
+      border: 2px solid var(--black);
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      position: relative;
+      margin: 0 2px;
+    }
+
+    .battery {
+      width: 18px;
+      height: 9px;
+      border: 1.5px solid var(--black);
+      border-radius: 2px;
+      position: relative;
+    }
+    .battery::after {
+      content: '';
+      position: absolute;
+      right: -4px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 2px;
+      height: 5px;
+      background: var(--black);
+      border-radius: 0 1px 1px 0;
+    }
+    .battery-fill {
+      position: absolute;
+      inset: 1.5px;
+      background: var(--black);
+      border-radius: 1px;
+      right: 30%;
+    }
+
+    .cash-icon {
+      width: 68px;
+      height: 68px;
+      background: var(--black);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--green);
+      font-size: 32px;
+      font-weight: 800;
+    }
+
+    .phone.large .cash-icon {
+      width: 84px;
+      height: 84px;
+      border-radius: 20px;
+      font-size: 40px;
+    }
+
+    .phone-home {
+      position: absolute;
+      bottom: 10px;
+      width: 80px;
+      height: 4px;
+      background: var(--black);
+      border-radius: 2px;
+      opacity: 0.6;
+    }
+
+    /* ─── VISUAL SYSTEM ─── */
+    .visual-system {
+      padding: 48px 24px 0;
+    }
+
+    .vs-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+
+    .vs-header h2 {
+      font-size: clamp(36px, 5vw, 52px);
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+
+    .btn-guidelines {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 18px;
+      border: 1.5px solid var(--border);
+      border-radius: 100px;
+      font-size: 12px;
+      text-decoration: none;
+      color: var(--black);
+      white-space: nowrap;
+    }
+
+    .btn-guidelines::after {
+      content: '↗';
+      font-size: 11px;
+    }
+
+    /* ─── VS ROW ─── */
+    .vs-row {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 24px;
+      padding: 32px 0;
+      border-top: 1px solid var(--border);
+      align-items: start;
+    }
+
+    .vs-label {
+      font-size: var(--text-sm);
+      color: #666;
+      padding-top: 2px;
+    }
+
+    /* COLOR */
+    .color-swatches {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .swatch-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .swatch-bar {
+      display: flex;
+      height: 28px;
+    }
+
+    .swatch {
+      width: 100px;
+      height: 28px;
+    }
+
+    .swatch-info {
+      font-size: 10px;
+      line-height: 1.7;
+      color: #333;
+    }
+
+    /* TYPOGRAPHY */
+    .typo-label {
+      font-size: var(--text-sm);
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .typo-display {
+      font-size: clamp(60px, 8vw, 96px);
+      font-weight: 700;
+      letter-spacing: -2px;
+      line-height: 1;
+    }
+
+    /* ICONOGRAPHY */
+    .icon-section { }
+    .icon-view-all {
+      font-size: var(--text-sm);
+      color: #333;
+      text-decoration: none;
+      display: block;
+      margin-bottom: 20px;
+    }
+
+    .icons-row {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .icon-item svg {
+      width: 64px;
+      height: 64px;
+    }
+
+    /* ART DIRECTION */
+    .art-phone-wrap {
+      background: var(--bg-gray);
+      border-radius: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 60px 40px;
+      max-width: 480px;
+      margin-left: auto;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      margin-top: 80px;
+      border-top: 1px solid var(--border);
+      padding: 24px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0;
+    }
+
+    .footer-col {
+      padding-right: 16px;
+    }
+
+    .footer-col-title {
+      font-size: 10px;
+      color: #999;
+      margin-bottom: 6px;
+    }
+
+    .footer-col a {
+      display: block;
+      font-size: 10px;
+      text-decoration: none;
+      color: #333;
+      line-height: 1.8;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-left">
+      <a href="#">Search</a>
+      <a href="#">Info</a>
+      <a href="#">Curation</a>
+      <a href="#">Designers</a>
+    </div>
+    <a href="#">Index</a>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <h1>Cash App</h1>
+  </div>
+
+  <!-- SUB-NAV -->
+  <div class="sub-nav">
+    <div class="sub-nav-col">
+      <span>Info</span>
+    </div>
+    <div class="sub-nav-col">
+      <a href="#">Travel</a>
+      <a href="#">Art</a>
+      <a href="#">Education</a>
+      <a href="#">Shop</a>
+    </div>
+    <div class="sub-nav-col">
+      <a href="#">Travel</a>
+      <a href="#">Art</a>
+      <a href="#">Education</a>
+      <a href="#">Shop</a>
+    </div>
+  </div>
+
+  <!-- PHONE HERO -->
+  <div class="phone-section">
+    <div class="phone">
+      <div class="phone-status">
+        <span>9:41</span>
+        <div class="phone-status-icons">
+          <div style="display:flex;gap:1px;align-items:flex-end">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+          </div>
+          <div style="width:12px;height:9px;border:1.5px solid #000;border-bottom:none;border-radius:8px 8px 0 0;margin:0 2px"></div>
+          <div class="battery"><div class="battery-fill"></div></div>
+        </div>
+      </div>
+      <div class="cash-icon">$</div>
+      <div class="phone-home"></div>
+    </div>
+  </div>
+
+  <!-- VISUAL SYSTEM -->
+  <div class="visual-system">
+    <div class="vs-header">
+      <h2>Visual System</h2>
+      <a href="#" class="btn-guidelines">View Brand Guidelines</a>
+    </div>
+
+    <!-- Color -->
+    <div class="vs-row">
+      <div class="vs-label">Color</div>
+      <div class="color-swatches">
+
+        <div class="swatch-group">
+          <div class="swatch-bar">
+            <div class="swatch" style="background:#00D632;width:60px"></div>
+            <div class="swatch" style="background:#000000;width:60px"></div>
+          </div>
+          <div class="swatch-info">
+            CMYK: 60/40/40/100<br>
+            RGB: 0/0/0<br>
+            HEX: #000000<br>
+            PMS: Black C / U C
+          </div>
+        </div>
+
+        <div class="swatch-group">
+          <div class="swatch-bar">
+            <div class="swatch" style="background:#000000"></div>
+          </div>
+          <div class="swatch-info">
+            CMYK: 60/40/40/100<br>
+            RGB: 0/0/0<br>
+            HEX: #000000<br>
+            PMS: Black C / U C
+          </div>
+        </div>
+
+        <div class="swatch-group">
+          <div class="swatch-bar">
+            <div class="swatch" style="background:#C8FF00"></div>
+          </div>
+          <div class="swatch-info">
+            CMYK: 60/40/40/100<br>
+            RGB: 0/0/0<br>
+            HEX: #000000<br>
+            PMS: Black C / U C
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Typography -->
+    <div class="vs-row">
+      <div class="vs-label">Typography</div>
+      <div>
+        <div class="typo-label">Cash App Sans</div>
+        <div class="typo-display">Abc123</div>
+      </div>
+    </div>
+
+    <!-- Iconography -->
+    <div class="vs-row">
+      <div class="vs-label">Iconography</div>
+      <div class="icon-section">
+        <a href="#" class="icon-view-all">View All</a>
+        <div class="icons-row">
+
+          <!-- Clipboard icon -->
+          <div class="icon-item">
+            <svg viewBox="0 0 64 64" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="14" y="12" width="36" height="44" rx="4"/>
+              <rect x="22" y="8" width="20" height="8" rx="2"/>
+              <line x1="22" y1="28" x2="42" y2="28"/>
+              <line x1="22" y1="36" x2="36" y2="36"/>
+            </svg>
+          </div>
+
+          <!-- Trend/arrow icon -->
+          <div class="icon-item">
+            <svg viewBox="0 0 64 64" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 44 C 16 44, 20 20, 32 20 S 44 36, 56 20"/>
+              <polyline points="46,14 56,20 50,30"/>
+            </svg>
+          </div>
+
+          <!-- Stacked waves / burger icon -->
+          <div class="icon-item">
+            <svg viewBox="0 0 64 64" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 22 Q 20 14, 32 22 Q 44 30, 54 22"/>
+              <path d="M10 32 Q 20 24, 32 32 Q 44 40, 54 32"/>
+              <path d="M10 42 Q 20 34, 32 42 Q 44 50, 54 42"/>
+            </svg>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Art Direction -->
+    <div class="vs-row" style="padding-bottom: 64px">
+      <div class="vs-label">Art Direction</div>
+      <div>
+        <div class="typo-label" style="margin-bottom:24px">Illustration</div>
+        <div class="art-phone-wrap">
+          <div class="phone large">
+            <div class="phone-status">
+              <span>9:41</span>
+              <div class="phone-status-icons">
+                <div style="display:flex;gap:1px;align-items:flex-end">
+                  <div class="bar"></div>
+                  <div class="bar"></div>
+                  <div class="bar"></div>
+                  <div class="bar"></div>
+                </div>
+                <div style="width:12px;height:9px;border:1.5px solid #000;border-bottom:none;border-radius:8px 8px 0 0;margin:0 2px"></div>
+                <div class="battery"><div class="battery-fill"></div></div>
+              </div>
+            </div>
+            <div class="cash-icon">$</div>
+            <div class="phone-home"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-col">
+      <div class="footer-col-title">Categories</div>
+      <a href="#">Music</a>
+      <a href="#">Organization</a>
+      <a href="#">Ai</a>
+      <a href="#">Education</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Categories</div>
+      <a href="#">Music</a>
+      <a href="#">Organization</a>
+      <a href="#">Ai</a>
+      <a href="#">Education</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Categories</div>
+      <a href="#">Music</a>
+      <a href="#">Organization</a>
+      <a href="#">Ai</a>
+      <a href="#">Education</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Categories</div>
+      <a href="#">Music</a>
+      <a href="#">Organization</a>
+      <a href="#">Ai</a>
+      <a href="#">Education</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Categories</div>
+      <a href="#">Music</a>
+      <a href="#">Organization</a>
+      <a href="#">Ai</a>
+      <a href="#">Education</a>
+    </div>
+  </footer>
+
+</body>
+</html>
