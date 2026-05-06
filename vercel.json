@@ -2,19 +2,12 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/index.js",
+      "src": "server.js",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": [
-          "*.html",
-          "*.svg",
-          "*.css",
-          "*.js",
-          "!server.js",
-          "!api/**"
-        ]
+        "includeFiles": ["*.html", "*.svg", "*.css"]
       }
     }
   ],
-  "routes": [{ "src": "/(.*)", "dest": "/api/index.js" }]
+  "routes": [{ "src": "/(.*)", "dest": "/server.js" }]
 }
