@@ -6,7 +6,7 @@ const https   = require('https');
 
 const app  = express();
 const PORT = process.env.PORT || 3011;
-const PASS = 'test123';
+const PASS = process.env.UPLOAD_PASSWORD || 'test123';
 
 /* ── uploads dirs ────────────────────────────────── */
 const UPLOADS                  = path.join(__dirname, 'uploads');
@@ -15,9 +15,9 @@ const STUDIO_UPLOADS           = path.join(__dirname, 'uploads-studio');
 const STUDIO_CAPTIONS_FILE     = path.join(STUDIO_UPLOADS, 'captions.json');
 const INTERFACES_UPLOADS       = path.join(__dirname, 'uploads-interfaces');
 const INTERFACES_CAPTIONS_FILE = path.join(INTERFACES_UPLOADS, 'captions.json');
-fs.mkdirSync(UPLOADS, { recursive: true });
-fs.mkdirSync(STUDIO_UPLOADS, { recursive: true });
-fs.mkdirSync(INTERFACES_UPLOADS, { recursive: true });
+try { fs.mkdirSync(UPLOADS, { recursive: true }); } catch(e) {}
+try { fs.mkdirSync(STUDIO_UPLOADS, { recursive: true }); } catch(e) {}
+try { fs.mkdirSync(INTERFACES_UPLOADS, { recursive: true }); } catch(e) {}
 
 /* ── allowed types ───────────────────────────────── */
 const ALLOWED = /\.(jpe?g|png|gif|webp|avif|svg)$/i;
@@ -375,6 +375,10 @@ app.get('/api/tumblr', async (req, res) => {
   }
 });
 
-app.listen(PORT, () =>
-  console.log(`Graphicwebsite on :${PORT}  uploads=${UPLOADS}  password=${PASS}`)
-);
+if (require.main === module) {
+  app.listen(PORT, () =>
+    console.log(`Graphicwebsite on :${PORT}  uploads=${UPLOADS}  password=${PASS}`)
+  );
+}
+
+module.exports = app;
